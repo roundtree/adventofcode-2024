@@ -7,7 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class Day02SolutionsTest {
 
     @Test
-    void setGetSumOfLocationDistances() {
+    void setGetAmountOfSafeReports() {
         final Reports locations = PuzzleInputReader.readPuzzleInput("day02/day02_test_puzzleinput.txt");
 
         assertThat(locations.getAmountOfSafeReports()).isEqualTo(2);
@@ -21,14 +21,14 @@ class Day02SolutionsTest {
     }
 
     @Test
-    void testCalculateSimilarityScore() {
+    void setGetAmountOfSafeReportsWithDampening() {
         final Reports locations = PuzzleInputReader.readPuzzleInput("day02/day02_test_puzzleinput.txt");
 
         assertThat(locations.getAmountOfSafeReportsWithDampening()).isEqualTo(4);
     }
 
     @Test
-    void testDay01PuzzleSolutionToPart2() {
+    void testDay02PuzzleSolutionToPart2() {
         final Reports locations = PuzzleInputReader.readPuzzleInput("day02/day02_puzzleinput.txt");
 
         assertThat(locations.getAmountOfSafeReportsWithDampening()).isEqualTo(400);
