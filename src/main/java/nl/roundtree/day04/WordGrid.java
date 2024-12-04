@@ -9,18 +9,17 @@ public record WordGrid(Letter[][] letterGrid) {
         final int rowDirection = direction.rowDirection;
         final int columnDirection = direction.columnDirection;
 
-        final StringBuilder fourLetters = new StringBuilder("");
+        final StringBuilder letterStringBuilder = new StringBuilder();
         for (int i = 0; i < amount; i++) {
             try {
-                fourLetters.append(letterGrid[letter.row + rowDirection * i][letter.column + columnDirection * i].character);
+                letterStringBuilder.append(letterGrid[letter.row + rowDirection * i][letter.column + columnDirection * i].character);
             } catch (final Exception e) {
                 // out of bounds, break
                 break;
             }
-
         }
         
-        return fourLetters.toString();
+        return letterStringBuilder.toString();
     }
 
     public int countXmas() {
@@ -64,8 +63,7 @@ public record WordGrid(Letter[][] letterGrid) {
                     final String topLeftLetters = getLettersInDirection(2, letter, Direction.TOP_LEFT);
                     final String bottomRightLetters = getLettersInDirection(2, letter, Direction.BOTTOM_RIGHT);
                     surroundingWords.add(topLeftLetters.replace("A", "") + bottomRightLetters);
-
-
+                    
                     final String topRightLetters = getLettersInDirection(2, letter, Direction.TOP_RIGHT);
                     final String bottomLeftLetters = getLettersInDirection(2, letter, Direction.BOTTOM_LEFT);
                     surroundingWords.add(topRightLetters.replace("A", "") + bottomLeftLetters);
