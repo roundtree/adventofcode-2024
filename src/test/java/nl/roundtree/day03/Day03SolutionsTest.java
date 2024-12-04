@@ -7,7 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class Day03SolutionsTest {
 
     @Test
-    void setGetSumOfValidMultiplications() {
+    void testGetSumOfValidMultiplications() {
         final String instructionsLine = PuzzleInputReader.readPuzzleInput("day03/day03_part1_test_puzzleinput.txt");
 
         assertThat(new Calculator().sumOfAllValidMultiplications(instructionsLine)).isEqualTo(161);
