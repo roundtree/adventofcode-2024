@@ -5,12 +5,12 @@ import java.util.List;
 
 public record WordGrid(Letter[][] letterGrid) {
     
-    public String getFourLettersInDirection(final Letter letter, final Direction direction) {
+    public String getLettersInDirection(int amount, final Letter letter, final Direction direction) {
         final int rowDirection = direction.rowDirection;
         final int columnDirection = direction.columnDirection;
 
-        final StringBuilder fourLetters = new StringBuilder("X");
-        for (int i = 1; i < 4; i++) {
+        final StringBuilder fourLetters = new StringBuilder("");
+        for (int i = 0; i < amount; i++) {
             try {
                 fourLetters.append(letterGrid[letter.row + rowDirection * i][letter.column + columnDirection * i].character);
             } catch (final Exception e) {
@@ -32,20 +32,53 @@ public record WordGrid(Letter[][] letterGrid) {
 
                 final List<String> surroundingWords = new ArrayList<>();
                 if (letter.character == 'X') {
-                    surroundingWords.add(getFourLettersInDirection(letter, Direction.LEFT));
-                    surroundingWords.add(getFourLettersInDirection(letter, Direction.TOP_LEFT));
-                    surroundingWords.add(getFourLettersInDirection(letter, Direction.TOP));
-                    surroundingWords.add(getFourLettersInDirection(letter, Direction.TOP_RIGHT));
-                    surroundingWords.add(getFourLettersInDirection(letter, Direction.RIGHT));
-                    surroundingWords.add(getFourLettersInDirection(letter, Direction.BOTTOM_RIGHT));
-                    surroundingWords.add(getFourLettersInDirection(letter, Direction.BOTTOM));
-                    surroundingWords.add(getFourLettersInDirection(letter, Direction.BOTTOM_LEFT));
+                    surroundingWords.add(getLettersInDirection(4, letter, Direction.LEFT));
+                    surroundingWords.add(getLettersInDirection(4, letter, Direction.TOP_LEFT));
+                    surroundingWords.add(getLettersInDirection(4, letter, Direction.TOP));
+                    surroundingWords.add(getLettersInDirection(4, letter, Direction.TOP_RIGHT));
+                    surroundingWords.add(getLettersInDirection(4, letter, Direction.RIGHT));
+                    surroundingWords.add(getLettersInDirection(4, letter, Direction.BOTTOM_RIGHT));
+                    surroundingWords.add(getLettersInDirection(4, letter, Direction.BOTTOM));
+                    surroundingWords.add(getLettersInDirection(4, letter, Direction.BOTTOM_LEFT));
                 }
 
                 count += (int) surroundingWords
                         .stream()
                         .filter(w -> w.equals("XMAS") || w.equals("SAMX"))
                         .count();
+            }
+        }
+
+        return count;
+    }
+
+    public int countCrossXmas() {
+        int count = 0;
+
+        for (int row = 0; row < letterGrid.length; row++) {
+            for (int column = 0; column < letterGrid[row].length; column++) {
+                final Letter letter = letterGrid[row][column];
+
+                final List<String> surroundingWords = new ArrayList<>();
+                if (letter.character == 'A') {
+                    final String topLeftLetters = getLettersInDirection(2, letter, Direction.TOP_LEFT);
+                    final String bottomRightLetters = getLettersInDirection(2, letter, Direction.BOTTOM_RIGHT);
+                    surroundingWords.add(topLeftLetters.replace("A", "") + bottomRightLetters);
+
+
+                    final String topRightLetters = getLettersInDirection(2, letter, Direction.TOP_RIGHT);
+                    final String bottomLeftLetters = getLettersInDirection(2, letter, Direction.BOTTOM_LEFT);
+                    surroundingWords.add(topRightLetters.replace("A", "") + bottomLeftLetters);
+                }
+
+                int masCount = (int) surroundingWords
+                        .stream()
+                        .filter(w -> w.equals("MAS") || w.equals("SAM"))
+                        .count();
+                
+                if (masCount == 2) {
+                    count += 1;
+                }
             }
         }
 
