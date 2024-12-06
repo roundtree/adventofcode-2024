@@ -36,17 +36,14 @@ class PuzzleInputReader {
                         final Room.Position position = new Room.Position(numberOfRows, columnNumber, Room.PositionType.EMPTY);
                         positions.add(position);
 
-                        Room.Direction direction = null;
-                        if (character.equals(">")) {
-                            direction = Room.Direction.RIGHT;
-                        } else if (character.equals("v")) {
-                            direction = Room.Direction.DOWN;
-                        } else if (character.equals("<")) {
-                            direction = Room.Direction.LEFT;
-                        } else if (character.equals("^")) {
-                            direction = Room.Direction.UP;
-                        }
-                        
+                        Room.Direction direction = switch (character) {
+                            case ">" -> Room.Direction.RIGHT;
+                            case "v" -> Room.Direction.DOWN;
+                            case "<" -> Room.Direction.LEFT;
+                            case "^" -> Room.Direction.UP;
+                            default -> null;
+                        };
+
                         guard = new Room.Guard(position, direction);
                     }
                 }

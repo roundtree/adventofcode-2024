@@ -7,7 +7,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 class Day06SolutionsTest {
 
     @Test
-    void testSumOfMiddlePageNumbersOfValidUpdates() {
+    void testNumberOfStepsBeforeLeavingRoom() {
         final Room room = PuzzleInputReader.readPuzzleInput("day06/day06_test_puzzleinput.txt");
         
         assertThat(room.getNumberOfStepsBeforeLeavingRoom()).isEqualTo(41);
@@ -31,6 +31,6 @@ class Day06SolutionsTest {
     void testDay06PuzzleSolutionToPart2() {
         final Room room = PuzzleInputReader.readPuzzleInput("day06/day06_puzzleinput.txt");
 
-        assertThat(room.getAmountOfObstructionPlacementsCausingALoop()).isEqualTo(9999);
+        assertThat(room.getAmountOfObstructionPlacementsCausingALoop()).isEqualTo(1928);
     }
 }
