@@ -1,16 +1,53 @@
 package nl.roundtree.day07;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public record Calibration(List<Equation> equations) {
+public class Calibration {
+
+    private final List<Equation> equations;
+    private final Map<Integer, List<List<Operator>>> operatorSequencesByNumberOfOperators = new HashMap<>();
+
+    public Calibration(final List<Equation> equations) {
+        this.equations = equations;
+    }
 
     public long sumOfValidCalculations(final Operator... operators) {
         return equations
                 .stream()
-                .filter(e -> e.isValidCalculation(operators))
+                .filter(e -> {
+                    final int numberOfOperators = e.equationNumbers.size() - 1;
+                    final List<List<Operator>> sequences = operatorSequencesByNumberOfOperators
+                            .computeIfAbsent(numberOfOperators, v -> determineOperatorSequences(numberOfOperators, operators));
+                    return e.isValidCalculation(sequences);
+                })
                 .mapToLong(equation -> equation.testValue)
                 .sum();
+    }
+
+    private List<List<Operator>> determineOperatorSequences(int numberOfOperators, final Operator... operatorsToUse) {
+        List<List<Operator>> completeInstructionList = new ArrayList<>();
+
+        for (final Operator operator : operatorsToUse) {
+            completeInstructionList.add(new ArrayList<>(List.of(operator)));
+        }
+
+        for (int i = 0; i < numberOfOperators - 1; i++) {
+            final List<List<Operator>> instructionListCurrentOperator = new ArrayList<>();
+            for (Operator operator : operatorsToUse) {
+                final List<List<Operator>> copiedList = new ArrayList<>();
+                completeInstructionList.forEach(instructionList -> copiedList.add(new ArrayList<>(instructionList)));
+
+                copiedList.forEach(operatorList -> operatorList.addLast(operator));
+                instructionListCurrentOperator.addAll(copiedList);
+            }
+
+            completeInstructionList = instructionListCurrentOperator;
+        }
+
+        return completeInstructionList;
     }
 
     public static class Equation {
@@ -23,9 +60,7 @@ public record Calibration(List<Equation> equations) {
             this.equationNumbers = equationNumbers;
         }
 
-        boolean isValidCalculation(final Operator... operators) {
-            final List<List<Operator>> operatorSequences = determineOperatorSequences(equationNumbers.size() - 1, operators);
-
+        boolean isValidCalculation(final List<List<Operator>> operatorSequences) {
             for (final List<Operator> sequence : operatorSequences) {
                 long sum = equationNumbers.getFirst();
                 for (int i = 1; i < equationNumbers.size(); i++) {
@@ -47,29 +82,6 @@ public record Calibration(List<Equation> equations) {
             }
 
             return false;
-        }
-
-        private List<List<Operator>> determineOperatorSequences(int numberOfOperators, final Operator... operatorsToUse) {
-            List<List<Operator>> completeInstructionList = new ArrayList<>();
-
-            for (final Operator operator : operatorsToUse) {
-                completeInstructionList.add(new ArrayList<>(List.of(operator)));
-            }
-
-            for (int i = 0; i < numberOfOperators - 1; i++) {
-                final List<List<Operator>> instructionListCurrentOperator = new ArrayList<>();
-                for (Operator operator : operatorsToUse) {
-                    final List<List<Operator>> copiedList = new ArrayList<>();
-                    completeInstructionList.forEach(instructionList -> copiedList.add(new ArrayList<>(instructionList)));
-
-                    copiedList.forEach(operatorList -> operatorList.addLast(operator));
-                    instructionListCurrentOperator.addAll(copiedList);
-                }
-
-                completeInstructionList = instructionListCurrentOperator;
-            }
-
-            return completeInstructionList;
         }
     }
 
