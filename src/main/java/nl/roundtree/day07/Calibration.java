@@ -3,18 +3,18 @@ package nl.roundtree.day07;
 import java.util.ArrayList;
 import java.util.List;
 
-public record Calibration(List<Equation> equations, int minEquationLength, int maxEquationLength) {
+public record Calibration(List<Equation> equations) {
 
-    public long sumOfValidCalculations() {
+    public long sumOfValidCalculations(final Operator... operators) {
         return equations
                 .stream()
-                .filter(Equation::isValidCalculation)
+                .filter(e -> e.isValidCalculation(operators))
                 .mapToLong(equation -> equation.testValue)
                 .sum();
     }
 
     public static class Equation {
-        
+
         private final Long testValue;
         private final List<Integer> equationNumbers;
 
@@ -22,21 +22,25 @@ public record Calibration(List<Equation> equations, int minEquationLength, int m
             this.testValue = testValue;
             this.equationNumbers = equationNumbers;
         }
-        
-        boolean isValidCalculation() {
-            final List<List<Operator>> operatorSequences = determineOperatorSequences(equationNumbers.size() - 1);
+
+        boolean isValidCalculation(final Operator... operators) {
+            final List<List<Operator>> operatorSequences = determineOperatorSequences(equationNumbers.size() - 1, operators);
 
             for (final List<Operator> sequence : operatorSequences) {
                 long sum = equationNumbers.getFirst();
                 for (int i = 1; i < equationNumbers.size(); i++) {
                     final int currentValue = equationNumbers.get(i);
                     final Operator operator = sequence.get(i - 1);
-                    
-                    sum = Operator.MULTIPLY.equals(operator)
-                            ? sum * currentValue
-                            : sum + currentValue;
+
+                    if (Operator.MULTIPLY.equals(operator)) {
+                        sum *= currentValue;
+                    } else if (Operator.ADD.equals(operator)) {
+                        sum += currentValue;
+                    } else {
+                        sum = Long.parseLong(sum + "" + currentValue);
+                    }
                 }
-                
+
                 if (sum == testValue) {
                     return true;
                 }
@@ -45,30 +49,33 @@ public record Calibration(List<Equation> equations, int minEquationLength, int m
             return false;
         }
 
-        private List<List<Operator>> determineOperatorSequences(int numberOfOperators) {
-            final List<List<Operator>> operatorInstructionList = new ArrayList<>();
+        private List<List<Operator>> determineOperatorSequences(int numberOfOperators, final Operator... operatorsToUse) {
+            List<List<Operator>> completeInstructionList = new ArrayList<>();
 
-            operatorInstructionList.add(new ArrayList<>(List.of(Operator.MULTIPLY)));
-            operatorInstructionList.add(new ArrayList<>(List.of(Operator.ADD)));
-
-            for (int i = 0; i < numberOfOperators - 1; i++) {
-                final List<List<Operator>> copiedList = new ArrayList<>();
-                operatorInstructionList.forEach(instructionList -> copiedList.add(new ArrayList<>(instructionList)));
-
-                operatorInstructionList.forEach(operatorList -> operatorList.addLast(Operator.MULTIPLY));
-                copiedList.forEach(operatorList -> operatorList.addLast(Operator.ADD));
-                operatorInstructionList.addAll(copiedList);
+            for (final Operator operator : operatorsToUse) {
+                completeInstructionList.add(new ArrayList<>(List.of(operator)));
             }
 
-            return operatorInstructionList;
+            for (int i = 0; i < numberOfOperators - 1; i++) {
+                final List<List<Operator>> instructionListCurrentOperator = new ArrayList<>();
+                for (Operator operator : operatorsToUse) {
+                    final List<List<Operator>> copiedList = new ArrayList<>();
+                    completeInstructionList.forEach(instructionList -> copiedList.add(new ArrayList<>(instructionList)));
+
+                    copiedList.forEach(operatorList -> operatorList.addLast(operator));
+                    instructionListCurrentOperator.addAll(copiedList);
+                }
+
+                completeInstructionList = instructionListCurrentOperator;
+            }
+
+            return completeInstructionList;
         }
     }
 
-    private enum Operator {
+    public enum Operator {
         ADD,
-        MULTIPLY
+        MULTIPLY,
+        CONCAT
     }
 }
-
-
-

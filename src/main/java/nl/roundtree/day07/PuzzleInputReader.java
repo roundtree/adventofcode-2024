@@ -13,8 +13,6 @@ class PuzzleInputReader {
 
     static Calibration readPuzzleInput(final String path) {
         final List<Calibration.Equation> equations = new ArrayList<>();
-        int minEquationLength = Integer.MAX_VALUE;
-        int maxEquationLength = Integer.MIN_VALUE;
 
         try (final InputStream inputStream = PuzzleInputReader.class.getClassLoader().getResourceAsStream(path);
              final InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
@@ -29,12 +27,6 @@ class PuzzleInputReader {
                 final List<Integer> numbers = Stream.of(splittedLine[1].trim().split(" "))
                         .map(Integer::parseInt)
                         .toList();
-                
-                if (numbers.size() < minEquationLength) {
-                    minEquationLength = numbers.size();
-                } else if (numbers.size() > maxEquationLength) {
-                    maxEquationLength = numbers.size();
-                }
 
                 equations.add(new Calibration.Equation(testValue, numbers));
 
@@ -44,6 +36,6 @@ class PuzzleInputReader {
             e.printStackTrace();
         }
 
-        return new Calibration(equations, minEquationLength, maxEquationLength);
+        return new Calibration(equations);
     }
 }
