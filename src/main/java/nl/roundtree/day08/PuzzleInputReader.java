@@ -38,6 +38,6 @@ class PuzzleInputReader {
             e.printStackTrace();
         }
 
-        return new Map(antennas, numberOfRows, numberOfColumns);
+        return new Map(antennas, new Map.Bounds(numberOfRows, numberOfColumns));
     }
 }

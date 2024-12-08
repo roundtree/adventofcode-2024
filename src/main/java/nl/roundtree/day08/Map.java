@@ -1,10 +1,55 @@
 package nl.roundtree.day08;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
-public record Map(List<Antenna> antennas, int rowExclusiveBound, int columnExclusiveBound) {
-    
-    public List<Antenna> findMatchingAntennas(final Antenna startAntenna) {
+public record Map(List<Antenna> antennas, Bounds bounds) {
+
+    public int countAntinodes() {
+        return antennas
+                .stream()
+                .map(antenna -> findMatchingAntennas(antenna)
+                        .stream()
+                        .map(matchingAntenna -> antenna.position.getAntinodePosition(matchingAntenna.position, bounds))
+                        .toList())
+                .flatMap(Collection::stream)
+                .<Position>mapMulti(Optional::ifPresent)
+                .collect(Collectors.toCollection(HashSet::new))
+                .size();
+    }
+
+    public int countRepeatingAntinodes() {
+        return antennas
+                .stream()
+                .map(antenna ->
+                        findMatchingAntennas(antenna)
+                                .stream()
+                                .map(a -> a.position)
+                                .map(matchingAntennaPosition -> {
+                                    final Set<Position> antinodes = new HashSet<>();
+                                    antinodes.add(antenna.position);
+
+                                    int antinodeRowOffset = antenna.position.getInverseRowDistanceTo(matchingAntennaPosition);
+                                    int antinodeColumnOffset = antenna.position.getInverseColumnDistanceTo(matchingAntennaPosition);
+
+                                    Optional<Position> antinode;
+                                    Position currentPosition = antenna.position;
+                                    do {
+                                        antinode = currentPosition.getAntinodePosition(antinodeRowOffset, antinodeColumnOffset, bounds);
+                                        antinode.ifPresent(antinodes::add);
+                                        currentPosition = antinode.orElse(null);
+                                    } while (antinode.isPresent());
+
+                                    return antinodes;
+                                })
+                                .flatMap(Collection::stream)
+                                .toList())
+                .flatMap(Collection::stream)
+                .collect(Collectors.toCollection(HashSet::new))
+                .size();
+    }
+
+    private List<Antenna> findMatchingAntennas(final Antenna startAntenna) {
         return antennas
                 .stream()
                 .filter(a -> !a.equals(startAntenna))
@@ -12,43 +57,40 @@ public record Map(List<Antenna> antennas, int rowExclusiveBound, int columnExclu
                 .toList();
     }
 
-    public int countAntinodes() {
-        final Set<Position> antinodes = new HashSet<>();
+    public record Position(int row, int column) {
         
-        for (final Antenna antenna : antennas) {
-            final List<Antenna> matchingAntennas = findMatchingAntennas(antenna);
-            
-            for (final Antenna matchingAntenna : matchingAntennas) {
-                int antinodeRowOffset = antenna.getInverseRowDistanceTo(matchingAntenna);
-                int antinodeColumnOffset = antenna.getInverseColumnDistanceTo(matchingAntenna);
-                
-                final Position antinode = new Position(antenna.position.row() + antinodeRowOffset, antenna.position.column() + antinodeColumnOffset);
-                if (antinode.withinBounds(rowExclusiveBound, columnExclusiveBound)) {
-                    antinodes.add(antinode);
-                }
+        public Optional<Position> getAntinodePosition(final Position targetPosition, final Bounds bounds) {
+            int antinodeRowOffset = this.getInverseRowDistanceTo(targetPosition);
+            int antinodeColumnOffset = this.getInverseColumnDistanceTo(targetPosition);
+
+            return getAntinodePosition(antinodeRowOffset, antinodeColumnOffset, bounds);
+        }
+
+        public Optional<Position> getAntinodePosition(final int antinodeRowOffset, final int antinodeColumnOffset, final Bounds bounds) {
+            final Position antinode = new Position(this.row + antinodeRowOffset, this.column + antinodeColumnOffset);
+            return bounds.isPositionWithin(antinode)
+                    ? Optional.of(antinode)
+                    : Optional.empty();
+        }
+
+        public int getInverseRowDistanceTo(final Position other) {
+            final int distance = Math.abs(this.row - other.row);
+            if (this.row < other.row) {
+                // This position is more to the top, negate the row distance
+                return -distance;
             }
+
+            return distance;
         }
 
-        return antinodes.size();
-    }
+        public int getInverseColumnDistanceTo(final Position other) {
+            final int distance = Math.abs(this.column - other.column);
+            if (this.column < other.column) {
+                // This position is more to the left, negate the column distance
+                return -distance;
+            }
 
-    public record Position(int row, int column){
-        
-        public boolean withinBounds(final int maxRowPosition, final int maxColumnPosition) {
-            return row >= 0 && row < maxRowPosition && column >= 0 && column < maxColumnPosition;
-        }
-        
-        @Override
-        public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            final Position position = (Position) o;
-            return row == position.row && column == position.column;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(row, column);
+            return distance;
         }
     }
 
@@ -57,37 +99,12 @@ public record Map(List<Antenna> antennas, int rowExclusiveBound, int columnExclu
         public boolean matchesFrequency(final Antenna other) {
             return this.frequency.equals(other.frequency);
         }
+    }
+    
+    public record Bounds(int maxRowExclusive, int maxColumnExclusive) {
         
-        public int getInverseRowDistanceTo(final Antenna other) {
-            final int distance = Math.abs(this.position.row() - other.position.row());
-            if (this.position.row() < other.position.row()) {
-                return -distance;
-            }
-            
-            return distance;
-        }
-
-        public int getInverseColumnDistanceTo(final Antenna other) {
-            final int distance = Math.abs(this.position.column() - other.position.column());
-            if (this.position.column() < other.position.column()) {
-                // This antenna is more to the left, negate the columnDistance
-                return -distance;
-            }
-            
-            return distance;
-        }
-
-        @Override
-        public boolean equals(final Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            final Antenna antenna = (Antenna) o;
-            return Objects.equals(frequency, antenna.frequency) && Objects.equals(position, antenna.position);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(position, frequency);
+        boolean isPositionWithin(final Position position) {
+            return position.row() >= 0 && position.row() < maxRowExclusive && position.column() >= 0 && position.column() < maxColumnExclusive;
         }
     }
 }
