@@ -11,7 +11,7 @@ import java.util.List;
 class PuzzleInputReader {
 
     static DiskMap readPuzzleInput(final String path) {
-        final List<DiskMap.Space> spaces = new ArrayList<>();
+        final List<DiskMap.SpaceBlock> spaceBlocks = new ArrayList<>();
 
         try (final InputStream inputStream = PuzzleInputReader.class.getClassLoader().getResourceAsStream(path);
              final InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
@@ -20,26 +20,34 @@ class PuzzleInputReader {
             String line = reader.readLine();
             final String[] characters = line.split("");
             
-            
             boolean currentIsFile = true;
             long fileId = 0;
             long spaceIndex = 0;
+            int spaceBlockIndex = 0;
             for (String character : characters) {
                 final int numberOfSpaces = Integer.parseInt(character);
                 if (currentIsFile) {
+                    final List<DiskMap.Space> spaces = new ArrayList<>();
                     for (int i = 0; i < numberOfSpaces; i++) {
                         spaces.add(new DiskMap.Space(spaceIndex, new DiskMap.File(fileId)));
                         spaceIndex++;
                     }
                     
+                    spaceBlocks.add(new DiskMap.SpaceBlock(spaces, spaceBlockIndex));
                     fileId++;
+                    spaceBlockIndex++;
                     currentIsFile = false;
                 } else {
+                    final List<DiskMap.Space> spaces = new ArrayList<>();
                     for (int i = 0; i < numberOfSpaces; i++) {
                         spaces.add(new DiskMap.Space(spaceIndex));
                         spaceIndex++;
                     }
                     
+                    if (!spaces.isEmpty()) {
+                        spaceBlocks.add(new DiskMap.SpaceBlock(spaces, spaceBlockIndex));
+                        spaceBlockIndex++;
+                    }
                     currentIsFile = true;
                 }
             }
@@ -48,6 +56,6 @@ class PuzzleInputReader {
             e.printStackTrace();
         }
 
-        return new DiskMap(spaces);
+        return new DiskMap(spaceBlocks);
     }
 }

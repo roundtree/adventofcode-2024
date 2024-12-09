@@ -1,15 +1,15 @@
 package nl.roundtree.day09;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public record DiskMap(List<Space> spaces) {
+public record DiskMap(List<SpaceBlock> spaceBlocks) {
 
-    public Long calculateChecksum() {
-        final List<Space> spaces = new ArrayList<>(this.spaces);
-
+    public Long calculateChecksumMovingFiles() {
+        final List<Space> spaces = getAllSpaces(spaceBlocks);
         final List<Space> emptySpaces = spaces
                 .stream()
                 .filter(Space::isEmpty)
@@ -39,6 +39,91 @@ public record DiskMap(List<Space> spaces) {
         }
         
         return checksum;
+    }
+
+    public Long calculateChecksumMovingFileBlocks() {
+        final List<SpaceBlock> spaceBlocks = new ArrayList<>(this.spaceBlocks);
+        
+        final List<SpaceBlock> fileSpaceBlocks = spaceBlocks
+                .stream()
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toCollection(ArrayList::new))
+                .reversed();
+        
+        for (final SpaceBlock fileSpaceBlock : fileSpaceBlocks) {
+            for (int i = 0; i < fileSpaceBlock.originalIndex; i++) {
+                final SpaceBlock spaceBlock = spaceBlocks.get(i);
+                if (fileSpaceBlock.fitsIn(spaceBlock)) {
+                    spaceBlock.moveBlockInThisBlock(fileSpaceBlock);
+                    break;
+                }
+            }
+        }
+        
+        final List<Space> spaces = getAllSpaces(spaceBlocks);
+        long checksum = 0L;
+        for (int i = 0; i < spaces.size(); i++) {
+            final Space space = spaces.get(i);
+            if (!space.isEmpty()) {
+                checksum += i * space.file.id;
+            }
+        }
+
+        return checksum;
+    }
+
+    private List<Space> getAllSpaces(final List<SpaceBlock> spaceBlocks) {
+        return spaceBlocks
+                .stream()
+                .map(SpaceBlock::getSpaces)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
+    
+    public record SpaceBlock(List<Space> spaces, int originalIndex) {
+        public boolean isEmpty() {
+            return spaces.getFirst().isEmpty();
+        }
+
+        public void moveBlockInThisBlock(final SpaceBlock fileBlock) {
+            int firstFreeSpaceIndex = firstFreeSpaceIndex();
+            for (int i = 0; i < fileBlock.spaces.size(); i++) {
+                final Space file = fileBlock.spaces.get(i);
+                spaces.remove(firstFreeSpaceIndex);
+                spaces.add(firstFreeSpaceIndex, file);
+
+                fileBlock.replaceSpaceAt(i, new Space(file.originalIndex));
+                
+                firstFreeSpaceIndex++;
+            }
+        }
+
+        private void replaceSpaceAt(final int index, final Space space) {
+            spaces.remove(index);
+            spaces.add(index, space);
+        }
+        
+        private int firstFreeSpaceIndex() {
+            for (int i = 0; i < spaces.size(); i++) {
+                if (spaces.get(i).isEmpty()) {
+                    return i;
+                }
+            }
+            
+            return -1;
+        }
+        
+        public int getAmountOfFreeSpace() {
+            return (int) spaces.stream().filter(Space::isEmpty).count();
+        }
+
+        public List<Space> getSpaces() {
+            return spaces;
+        }
+
+        public boolean fitsIn(final SpaceBlock otherBlock) {
+            return otherBlock.getAmountOfFreeSpace() >= spaces.size();
+        }
     }
 
     public static class Space {
