@@ -22,26 +22,28 @@ class PuzzleInputReader {
             
             
             boolean currentIsFile = true;
-            long idCounter = 0;
+            long fileId = 0;
+            long spaceIndex = 0;
             for (String character : characters) {
                 final int numberOfSpaces = Integer.parseInt(character);
                 if (currentIsFile) {
                     for (int i = 0; i < numberOfSpaces; i++) {
-                        spaces.add(new DiskMap.Space(new DiskMap.File(idCounter)));
+                        spaces.add(new DiskMap.Space(spaceIndex, new DiskMap.File(fileId)));
+                        spaceIndex++;
                     }
                     
-                    idCounter++;
+                    fileId++;
                     currentIsFile = false;
                 } else {
                     for (int i = 0; i < numberOfSpaces; i++) {
-                        spaces.add(new DiskMap.Space());
+                        spaces.add(new DiskMap.Space(spaceIndex));
+                        spaceIndex++;
                     }
                     
                     currentIsFile = true;
                 }
             }
             
-            int breakp = 0;
         } catch (IOException e) {
             e.printStackTrace();
         }
