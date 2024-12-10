@@ -19,18 +19,18 @@ class Day10SolutionsTest {
 
         assertThat(map.sumOfTrailheadScores()).isEqualTo(468);
     }
-//
-//    @Test
-//    void testCalculateChecksumMovingFileBlocks() {
-//        final DiskMap map = PuzzleInputReader.readPuzzleInput("day10/day10_test_puzzleinput.txt");
-//
-//        assertThat(map.calculateChecksumMovingFileBlocks()).isEqualTo(2858);
-//    }
-//
-//    @Test
-//    void testDay10PuzzleSolutionToPart2() {
-//        final DiskMap map = PuzzleInputReader.readPuzzleInput("day10/day10_puzzleinput.txt");
-//
-//        assertThat(map.calculateChecksumMovingFileBlocks()).isEqualTo(6398096697992L);
-//    }
+
+    @Test
+    void testSumOfTrailheadRatings() {
+        final TopographicMap map = PuzzleInputReader.readPuzzleInput("day10/day10_test_puzzleinput.txt");
+
+        assertThat(map.sumOfTrailheadRatings()).isEqualTo(81);
+    }
+
+    @Test
+    void testDay10PuzzleSolutionToPart2() {
+        final TopographicMap map = PuzzleInputReader.readPuzzleInput("day10/day10_puzzleinput.txt");
+
+        assertThat(map.sumOfTrailheadRatings()).isEqualTo(966);
+    }
 }
