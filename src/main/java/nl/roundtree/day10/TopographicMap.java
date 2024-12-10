@@ -7,14 +7,14 @@ public record TopographicMap(List<Position> positions) {
     public int sumOfTrailheadScores() {
         return getTrailheads()
                 .stream()
-                .mapToInt(t -> new HashSet<>(reachableNinePositions(t, 0, new ArrayList<>())).size())
+                .mapToInt(t -> new HashSet<>(reachableNinePositions(t, new ArrayList<>())).size())
                 .sum();
     }
 
     public int sumOfTrailheadRatings() {
         return getTrailheads()
                 .stream()
-                .mapToInt(t -> reachableNinePositions(t, 0, new ArrayList<>()).size())
+                .mapToInt(t -> reachableNinePositions(t, new ArrayList<>()).size())
                 .sum();
     }
     
@@ -25,14 +25,14 @@ public record TopographicMap(List<Position> positions) {
                 .toList();
     }
 
-    private List<Position> reachableNinePositions(final Position position, int numberOfNinePositions, List<Position> foundNinePositions) {
+    private List<Position> reachableNinePositions(final Position position, List<Position> foundNinePositions) {
         final List<Position> nextPositions = position.nextPositionsWithIncrementedHeight();
         for (final Position nextPosition : nextPositions) {
             if (nextPosition.height == 9) {
                 foundNinePositions.add(nextPosition);
-                foundNinePositions = reachableNinePositions(nextPosition, numberOfNinePositions + 1, foundNinePositions);
+                foundNinePositions = reachableNinePositions(nextPosition, foundNinePositions);
             } else {
-                foundNinePositions = reachableNinePositions(nextPosition, numberOfNinePositions, foundNinePositions);
+                foundNinePositions = reachableNinePositions(nextPosition, foundNinePositions);
             }
         }
 
