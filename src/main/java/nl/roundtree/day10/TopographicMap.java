@@ -30,10 +30,9 @@ public record TopographicMap(List<Position> positions) {
         for (final Position nextPosition : nextPositions) {
             if (nextPosition.height == 9) {
                 foundNinePositions.add(nextPosition);
-                foundNinePositions = reachableNinePositions(nextPosition, foundNinePositions);
-            } else {
-                foundNinePositions = reachableNinePositions(nextPosition, foundNinePositions);
             }
+            
+            foundNinePositions = reachableNinePositions(nextPosition, foundNinePositions);
         }
 
         return foundNinePositions;
