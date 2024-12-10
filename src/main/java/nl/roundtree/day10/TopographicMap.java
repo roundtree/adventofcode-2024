@@ -5,27 +5,24 @@ import java.util.*;
 public record TopographicMap(List<Position> positions) {
 
     public int sumOfTrailheadScores() {
-        final List<Position> trailheads = positions
-                .stream()
-                .filter(p -> p.height == 0)
-                .toList();
-
-        return trailheads
+        return getTrailheads()
                 .stream()
                 .mapToInt(t -> new HashSet<>(reachableNinePositions(t, 0, new ArrayList<>())).size())
                 .sum();
     }
 
     public int sumOfTrailheadRatings() {
-        final List<Position> trailheads = positions
-                .stream()
-                .filter(p -> p.height == 0)
-                .toList();
-
-        return trailheads
+        return getTrailheads()
                 .stream()
                 .mapToInt(t -> reachableNinePositions(t, 0, new ArrayList<>()).size())
                 .sum();
+    }
+    
+    private List<Position> getTrailheads() {
+        return positions
+                .stream()
+                .filter(p -> p.height == 0)
+                .toList();
     }
 
     private List<Position> reachableNinePositions(final Position position, int numberOfNinePositions, List<Position> foundNinePositions) {
@@ -44,13 +41,13 @@ public record TopographicMap(List<Position> positions) {
 
     public static class Position {
 
-        private final int height;
+        final int height;
         private final int row;
         private final int column;
-        private Position northPosition;
-        private Position eastPosition;
-        private Position southPosition;
-        private Position westPosition;
+        Position northPosition;
+        Position eastPosition;
+        Position southPosition;
+        Position westPosition;
 
         public Position(final int height,
                         final int row,
@@ -70,39 +67,17 @@ public record TopographicMap(List<Position> positions) {
 
         public List<Position> nextPositionsWithIncrementedHeight() {
             final List<Position> positions = new ArrayList<>();
-            if (northPosition != null && northPosition.height == this.height + 1) {
-                positions.add(northPosition);
-            }
-
-            if (eastPosition != null && eastPosition.height == this.height + 1) {
-                positions.add(eastPosition);
-            }
-
-            if (southPosition != null && southPosition.height == this.height + 1) {
-                positions.add(southPosition);
-            }
-
-            if (westPosition != null && westPosition.height == this.height + 1) {
-                positions.add(westPosition);
-            }
-
+            addIfOtherPositionHasIncrementedHeight(positions, northPosition);
+            addIfOtherPositionHasIncrementedHeight(positions, eastPosition);
+            addIfOtherPositionHasIncrementedHeight(positions, southPosition);
+            addIfOtherPositionHasIncrementedHeight(positions, westPosition);
             return positions;
         }
-
-        public void setNorthPosition(final Position northPosition) {
-            this.northPosition = northPosition;
-        }
-
-        public void setEastPosition(final Position eastPosition) {
-            this.eastPosition = eastPosition;
-        }
-
-        public void setSouthPosition(final Position southPosition) {
-            this.southPosition = southPosition;
-        }
-
-        public void setWestPosition(final Position westPosition) {
-            this.westPosition = westPosition;
+        
+        private void addIfOtherPositionHasIncrementedHeight(final List<Position> positions, final Position positionToCompare) {
+            if (positionToCompare != null && positionToCompare.height == this.height + 1) {
+                positions.add(positionToCompare);
+            }
         }
 
         @Override
@@ -116,15 +91,6 @@ public record TopographicMap(List<Position> positions) {
         @Override
         public int hashCode() {
             return Objects.hash(height, row, column);
-        }
-
-        @Override
-        public String toString() {
-            return "Position{" +
-                   "height=" + height +
-                   ", row=" + row +
-                   ", column=" + column +
-                   '}';
         }
     }
 }

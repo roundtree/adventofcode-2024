@@ -38,19 +38,11 @@ class PuzzleInputReader {
                     positionMap[rowNumber][columnNumber] = position;
                     
                     if (northPosition != null) {
-                        northPosition.setSouthPosition(position);
-                    }
-                    
-                    if (eastPosition != null) {
-                        eastPosition.setWestPosition(position);
-                    }
-                    
-                    if (southPosition != null) {
-                        southPosition.setNorthPosition(position);
+                        northPosition.southPosition = position;
                     }
                     
                     if (westPosition != null) {
-                        westPosition.setEastPosition(position);
+                        westPosition.eastPosition = position;
                     }
                     
                     positions.add(position);
